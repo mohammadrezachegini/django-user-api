@@ -59,6 +59,3 @@ pipeline {
     }
   }
 }
-
-// for test
-// salam
