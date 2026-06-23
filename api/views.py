@@ -15,7 +15,7 @@ class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def in_stock(self, request):
         """Custom endpoint: /api/items/in_stock/"""
         items = Item.objects.filter(stock__gt=0)
@@ -29,16 +29,20 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         # decrease stock when an order is created
-        item_id = request.data.get('item')
-        quantity = int(request.data.get('quantity', 1))
+        item_id = request.data.get("item")
+        quantity = int(request.data.get("quantity", 1))
 
         try:
             item = Item.objects.get(id=item_id)
         except Item.DoesNotExist:
-            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if item.stock < quantity:
-            return Response({'error': 'Not enough stock'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Not enough stock"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         item.stock -= quantity
         item.save()
@@ -49,14 +53,18 @@ class OrderViewSet(viewsets.ModelViewSet):
 def health_check(request):
     """Health endpoint for Kubernetes readiness/liveness probes"""
     from django.http import JsonResponse
+
     try:
         connection.ensure_connection()
         db_status = "healthy"
     except Exception:
         db_status = "unhealthy"
 
-    return JsonResponse({
-        'status': 'healthy' if db_status == 'healthy' else 'unhealthy',
-        'database': db_status,
-        'version': '1.0.0',
-    }, status=200 if db_status == 'healthy' else 503)
+    return JsonResponse(
+        {
+            "status": "healthy" if db_status == "healthy" else "unhealthy",
+            "database": db_status,
+            "version": "1.0.0",
+        },
+        status=200 if db_status == "healthy" else 503,
+    )
